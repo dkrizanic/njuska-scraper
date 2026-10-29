@@ -1,14 +1,14 @@
 # Register Daily Windows Scheduled Task for Njuškalo Real Estate Scraper
 # Runs every day at 03:00 AM using the project's virtual environment.
 
-$ProjectDir = "C:\Users\dario\.gemini\antigravity\scratch\njuskalo-scraper"
-$PythonExe = "$ProjectDir\.venv\Scripts\python.exe"
+$RepoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+$PythonExe = "$RepoRoot\.venv\Scripts\python.exe"
 $TaskName = "NjuskaloDailyRealEstateScraper"
 
 $Action = New-ScheduledTaskAction `
     -Execute $PythonExe `
-    -Argument "main.py scrape" `
-    -WorkingDirectory $ProjectDir
+    -Argument "server/cron/daily_scheduler.py" `
+    -WorkingDirectory $RepoRoot
 
 $Trigger = New-ScheduledTaskTrigger -Daily -At "03:00AM"
 

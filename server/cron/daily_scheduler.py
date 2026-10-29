@@ -1,10 +1,17 @@
 """
 Built-in daily cron runner for Njuškalo Real Estate Scraper.
-Can be run continuously (`python daily_scheduler.py`) or inside Docker.
+Can be run continuously (`python server/cron/daily_scheduler.py`) or inside Docker.
 """
 import asyncio
 from datetime import datetime, time, timedelta
+import os
+from pathlib import Path
 import sys
+
+# Ensure repository root is on sys.path
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
 from rich.console import Console
 

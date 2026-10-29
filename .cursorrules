@@ -1,0 +1,12 @@
+# Cursor & Agent Rules
+
+See `AGENTS.md` for complete guidelines.
+
+## Mandatory Rules:
+1. **Commit Messages**: Follow Conventional Commits (`feat(server): ...`, `refactor(client): ...`). NEVER mention AI, LLMs, or automated assistants in commit messages or pull requests.
+2. **Code Comments**: ZERO tolerance for robotic/AI comments (e.g. "// Fetch listings", "// AI generated", "// Helper function"). Only comment non-obvious business/domain decisions or complex regex.
+3. **Tests**: Only write tests for API integration contracts and critical business calculations (e.g. arbitrage algorithms). Never test mock-only trivial wrappers or bloat the test suite for vanity coverage metrics.
+4. **Architecture**:
+   - Backend Express: MVC architecture (`models`, `services`, `controllers`, `routes`, `config`).
+   - Frontend React: Modular architecture (`pages`, `components`, `props`, `services`).
+   - Server scripts and crons belong in `server/scripts/` and `server/cron/`.

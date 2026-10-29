@@ -1,10 +1,16 @@
 import asyncio
+from pathlib import Path
 import re
 import sys
 import time
 from decimal import Decimal
 from typing import List, Optional
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
+
+# Ensure repository root is on sys.path
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
@@ -35,7 +41,7 @@ def build_page_url(base_url: str, page_num: int) -> str:
 
 async def fast_scrape_category(base_url: str, category_name: str, max_pages: int = 300) -> None:
     init_db()
-    console.rule(f"[bold cyan]🚀 FAST SCRAPE: {category_name}[/bold cyan]")
+    console.rule(f"[bold cyan]FAST SCRAPE: {category_name}[/bold cyan]")
     console.print(f"URL: {base_url} | Max pages: {max_pages}")
 
     async with async_playwright() as p:
@@ -62,57 +68,53 @@ async def fast_scrape_category(base_url: str, category_name: str, max_pages: int
             pass
 
         total_saved = 0
-        total_new = 0
+        consecutive_empty = 0
 
-        for page_num in range(1, max_pages + 1):
-            url = build_page_url(base_url, page_num)
+        for current_page in range(1, max_pages + 1):
+            page_url = build_page_url(base_url, current_page)
             t0 = time.time()
             try:
-                await page.goto(url, wait_until="domcontentloaded", timeout=30000)
+                await page.goto(page_url, wait_until="domcontentloaded", timeout=45000)
                 html = await page.content()
-                cards = parse_search_results_page(html, category_name=category_name)
+                listings = parse_search_results_page(html, category_name)
 
-                if not cards:
-                    console.print(f"[yellow]Page {page_num}: No more cards found. Finished target![/yellow]")
-                    break
+                if not listings:
+                    consecutive_empty += 1
+                    console.print(f"[yellow]Page {current_page}: 0 listings found.[/yellow]")
+                    if consecutive_empty >= 2:
+                        console.print(f"[bold green]Reached end of results at page {current_page}.[/bold green]")
+                        break
+                    await asyncio.sleep(1.0)
+                    continue
 
+                consecutive_empty = 0
+                saved = 0
                 with get_db_session() as session:
-                    for card in cards:
-                        _, is_new, _ = upsert_listing_from_card(session, card)
-                        if is_new:
-                            total_new += 1
-                        total_saved += 1
+                    for item in listings:
+                        upsert_listing_from_card(session, item)
+                        saved += 1
+                    session.commit()
 
-                elapsed = time.time() - t0
-                console.print(
-                    f"Page {page_num:3d}: [green]{len(cards)} cards[/green] parsed in {elapsed:.1f}s | "
-                    f"Total new: [bold green]{total_new}[/bold green]"
-                )
+                total_saved += saved
+                dur = time.time() - t0
+                console.print(f"Page {current_page:3d} | Saved {saved:2d} ads | Total: {total_saved:5d} | {dur:.2f}s")
 
-                # Light delay between pages (0.4s)
                 await asyncio.sleep(0.4)
-
             except Exception as e:
-                console.print(f"[red]Error on page {page_num}: {e}[/red]")
-                await asyncio.sleep(2)
+                console.print(f"[bold red]Error on page {current_page}: {e}[/bold red]")
+                await asyncio.sleep(2.0)
 
         await browser.close()
-        console.print(f"\n[bold green]✔ Done {category_name}: {total_saved} processed, {total_new} newly added![/bold green]")
+        console.print(f"[bold green]Done! Total saved for {category_name}: {total_saved}[/bold green]")
 
 
 async def main():
-    # 1. Scrape all Rental Apartments in Zagreb (approx. 150 pages = ~4,100 listings)
-    await fast_scrape_category(
-        "https://www.njuskalo.hr/iznajmljivanje-stanova/zagreb",
-        "Najam stanova - Zagreb",
-        max_pages=160,
-    )
-    # 2. Scrape all Apartment Sales in Zagreb (approx. 280 pages = ~7,800 listings)
-    await fast_scrape_category(
-        "https://www.njuskalo.hr/prodaja-stanova/zagreb",
-        "Stanovi prodaja - Zagreb",
-        max_pages=290,
-    )
+    targets = [
+        ("https://www.njuskalo.hr/prodaja-stanova/zagreb", "Stanovi Zagreb - Prodaja", 350),
+        ("https://www.njuskalo.hr/iznajmljivanje-stanova/zagreb", "Stanovi Zagreb - Najam", 180),
+    ]
+    for url, cat, pages in targets:
+        await fast_scrape_category(url, cat, max_pages=pages)
 
 
 if __name__ == "__main__":

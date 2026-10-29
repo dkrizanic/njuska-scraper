@@ -1,55 +1,80 @@
-# Njuškalo Real Estate (Nekretnine) Scraper
+# Njuškalo Real Estate Intelligence & Scraper
 
-A modular Python scraper for **Njuškalo.hr** real estate listings powered by **Playwright** (persistent browser profiles for anti-bot/CAPTCHA resilience), **BeautifulSoup4**, and **PostgreSQL** (`SQLAlchemy 2.0` + `JSONB` attributes + full price history tracking).
+A full-stack Croatian real estate data engine and market intelligence platform for **Njuškalo.hr**. Features a high-performance Python scraper, PostgreSQL database with price history tracking, Express TypeScript backend with clean MVC architecture, and a React analytics dashboard for sublease / rent-to-rent arbitrage detection.
 
-## Key Features
-- **Two-Stage Real Estate Extraction**:
-  1. Crawls search/category pagination pages (`EntityList-item--Regular`, `EntityList-item--VauVau`, etc.).
-  2. Visits each property detail page to extract full specifications (`ClassifiedDetailSummary`, `ClassifiedDetailBasicDetails`, `ClassifiedDetailPropertyGroups`, description, seller info, and gallery images).
-- **Price History Tracking**: Automatically detects price drops or increases across runs and logs every price change in the `price_history` table.
-- **Persistent Browser Profile**: Stores cookies, local storage, and ShieldSquare/Cloudflare trust tokens in `./browser_profile/` so you rarely encounter CAPTCHAs after the first session.
-- **Hybrid Relational + JSONB Schema**: Normalizes core real estate metrics (`price_eur`, `price_per_m2_eur`, `living_area_m2`, `land_area_m2`, `rooms`, `floor`, `year_built`, `energy_class`, `city`, `neighborhood`) while preserving all raw Croatian property attributes in a PostgreSQL `JSONB` column (`attributes`).
+---
+
+## Architecture Overview
+
+### 1. Backend (`/server`) - Express TypeScript MVC
+- **Models (`server/src/models/`)**: Direct SQL queries, connection pooling, and data access objects (`listings.model.ts`, `stats.model.ts`, `analytics.model.ts`).
+- **Services (`server/src/services/`)**: Core business calculations, rent-to-rent arbitrage metrics, revenue tier estimators (`arbitrage.service.ts`, `listings.service.ts`, `stats.service.ts`, `analytics.service.ts`).
+- **Controllers (`server/src/controllers/`)**: HTTP request handling, parameter validation, and JSON responses.
+- **Routes (`server/src/routes/`)**: Modular routing mounted under `/api` (`/stats`, `/listings`, `/rental-arbitrage`, `/analytics`).
+- **Cron & Scripts (`server/cron/`, `server/scripts/`)**:
+  - `server/cron/daily_scheduler.py`: Automated daily crawler runner.
+  - `server/cron/register_daily_cron.ps1`: Windows Task Scheduler registration script.
+  - `server/scripts/fast_scrape.py`: High-throughput concurrent search-page crawler.
+- **Tests (`server/src/tests/`)**: High-value API contract and unit tests powered by Node's native test runner (`tsx --test`) and Supertest.
+
+### 2. Frontend (`/client`) - React + TypeScript + Tailwind CSS
+- **Pages (`client/src/pages/`)**:
+  - `ArbitragePage.tsx`: Under-market sublease & rent-to-rent opportunities ranked by discount % and projected monthly profit.
+  - `ListingsPage.tsx`: Searchable listings explorer with sorting, filtering, and pagination.
+  - `AnalyticsPage.tsx`: Neighborhood price charts (€/m²) and seller volume breakdown.
+- **Components (`client/src/components/`)**:
+  - `layout/`: `Navbar.tsx`, `KpiCards.tsx`.
+  - `listings/`: `ListingsTable.tsx`, `ListingFilters.tsx`, `Pagination.tsx`.
+  - `arbitrage/`: `ArbitrageCard.tsx`, `ArbitrageGrid.tsx`.
+  - `analytics/`: `NeighborhoodsChart.tsx`, `SellersOverview.tsx`.
+- **Props & Types (`client/src/props/`)**: Typed interfaces for listings, arbitrage metrics, platform stats, and component props.
+- **Services (`client/src/services/`)**: Encapsulated API client (`api.ts`).
 
 ---
 
 ## Quick Start
 
-### 1. Start PostgreSQL via Docker Compose
+### 1. Database & Infrastructure
 ```powershell
 docker compose up -d
 ```
 
-### 2. Create Virtual Environment & Install Dependencies
+### 2. Scraper Setup
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 playwright install chromium
-```
-
-### 3. Initialize the Database Schema
-```powershell
 python main.py init-db
 ```
 
-### 4. Run the Scraper
- Scrape all targets configured in `targets.yaml`:
+Run high-speed crawl of Zagreb apartments (sale + rental):
 ```powershell
-python main.py scrape
+python server/scripts/fast_scrape.py
 ```
 
-Or scrape a specific Njuškalo URL directly from the CLI:
+### 3. Backend API
 ```powershell
-python main.py scrape --url "https://www.njuskalo.hr/prodaja-stanova/zagreb" --max-pages 2 --details
+cd server
+npm install
+npm run dev
+```
+API runs on `http://localhost:4000`.
+
+To run backend tests:
+```powershell
+npm test
 ```
 
-> **Tip for First Run:** Keep `HEADLESS=false` (the default in `.env`) on your first run. If Njuškalo presents a cookie dialog or a one-time bot verification prompt, the browser window will let it pass and persist the session inside `./browser_profile/`.
-
-### 5. View Stats & Price Drops
+### 4. Frontend Dashboard
 ```powershell
-# View database summary and recent listings table
-python main.py stats
-
-# View listings whose price has changed over time
-python main.py price-changes
+cd client
+npm install
+npm run dev
 ```
+Dashboard runs on `http://localhost:5173`.
+
+---
+
+## AI Agent & Contribution Rules
+This repository enforces strict rules on commit format, commentary in code, and test architecture. See [AGENTS.md](AGENTS.md) and [.cursorrules](.cursorrules).
