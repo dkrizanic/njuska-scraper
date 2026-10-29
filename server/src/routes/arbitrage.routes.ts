@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { getArbitrageController } from '../controllers/arbitrage.controller';
+import { arbitrageController } from '../controllers/arbitrage.controller';
 
 const router = Router();
 
-router.get('/', getArbitrageController);
+router.get('/', arbitrageController.getArbitrage);
 
 export default router;

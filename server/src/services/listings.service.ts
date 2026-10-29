@@ -1,48 +1,27 @@
-import { findListings, ListingFilterOptions, ListingRecord } from '../models/listings.model';
+import { IListingsService } from '../interfaces/services/listing.service.interface';
+import { IListingRepository } from '../interfaces/repositories/listing.repository.interface';
+import { ListingRepository } from '../repositories/listing.repository';
+import { ListingQueryDto } from '../dtos/listing/listing-query.dto';
+import { CreateListingDto } from '../dtos/listing/create-listing.dto';
+import { ListingResponseDto, PaginatedListingsResponseDto } from '../dtos/listing/listing-response.dto';
 
-export interface ListingsQueryParams {
-  category?: string;
-  neighborhood?: string;
-  sellerType?: string;
-  minPrice?: string;
-  maxPrice?: string;
-  query?: string;
-  sort?: string;
-  limit?: string;
-  offset?: string;
-  page?: string;
-}
+export class ListingsService implements IListingsService {
+  constructor(private readonly listingRepo: IListingRepository = new ListingRepository()) {}
 
-export interface ListingsResult {
-  total: number;
-  items: ListingRecord[];
-  page: number;
-  limit: number;
-}
+  public async getListings(queryDto: ListingQueryDto): Promise<PaginatedListingsResponseDto> {
+    const { total, entities } = await this.listingRepo.findMany(queryDto);
+    const items = entities.map(entity => ListingResponseDto.fromEntity(entity));
+    return new PaginatedListingsResponseDto(total, queryDto.page, queryDto.limit, items);
+  }
 
-export async function getListings(params: ListingsQueryParams): Promise<ListingsResult> {
-  const limit = Math.min(100, Math.max(1, parseInt(params.limit || '50', 10)));
-  const page = params.page ? Math.max(1, parseInt(params.page, 10)) : 1;
-  const offset = params.offset ? Math.max(0, parseInt(params.offset, 10)) : (page - 1) * limit;
+  public async getListingById(id: number): Promise<ListingResponseDto | null> {
+    const entity = await this.listingRepo.findById(id);
+    if (!entity) return null;
+    return ListingResponseDto.fromEntity(entity);
+  }
 
-  const filters: ListingFilterOptions = {
-    category: params.category,
-    neighborhood: params.neighborhood,
-    sellerType: params.sellerType,
-    minPrice: params.minPrice ? parseFloat(params.minPrice) : undefined,
-    maxPrice: params.maxPrice ? parseFloat(params.maxPrice) : undefined,
-    query: params.query?.trim(),
-    sort: params.sort || 'newest',
-    limit,
-    offset,
-  };
-
-  const { total, items } = await findListings(filters);
-
-  return {
-    total,
-    items,
-    page: Math.floor(offset / limit) + 1,
-    limit,
-  };
+  public async createListing(dto: CreateListingDto): Promise<ListingResponseDto> {
+    const entity = await this.listingRepo.create(dto);
+    return ListingResponseDto.fromEntity(entity);
+  }
 }

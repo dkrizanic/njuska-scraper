@@ -6,10 +6,13 @@ A full-stack Croatian real estate data engine and market intelligence platform f
 
 ## Architecture Overview
 
-### 1. Backend (`/server`) - Express TypeScript MVC
-- **Models (`server/src/models/`)**: Direct SQL queries, connection pooling, and data access objects (`listings.model.ts`, `stats.model.ts`, `analytics.model.ts`).
-- **Services (`server/src/services/`)**: Core business calculations, rent-to-rent arbitrage metrics, revenue tier estimators (`arbitrage.service.ts`, `listings.service.ts`, `stats.service.ts`, `analytics.service.ts`).
-- **Controllers (`server/src/controllers/`)**: HTTP request handling, parameter validation, and JSON responses.
+### 1. Backend (`/server`) - Enterprise Express TypeScript Architecture
+- **Entities (`server/src/entities/`)**: Domain entities (`ListingEntity`, `SellerEntity`, `PriceHistoryEntity`) representing persistent database models.
+- **DTOs (`server/src/dtos/`)**: Dedicated Read and Write DTOs (`ListingQueryDto`, `CreateListingDto`, `ListingResponseDto`, `StatsResponseDto`, `ArbitrageResponseDto`, `NeighborhoodStatsDto`, `SellerAnalyticsDto`).
+- **Interfaces (`server/src/interfaces/`)**: Strict contracts for service (`IListingsService`, `IStatsService`, `IArbitrageService`, `IAnalyticsService`) and repository abstractions.
+- **Repositories (`server/src/repositories/`)**: Encapsulated data access and SQL query layer (`ListingRepository`, `StatsRepository`, `AnalyticsRepository`).
+- **Services (`server/src/services/`)**: Business logic implementing service interfaces and executing arbitrage calculations and revenue projections.
+- **Controllers (`server/src/controllers/`)**: Ultra-minimal controllers delegating directly to services via DTOs with global error handling.
 - **Routes (`server/src/routes/`)**: Modular routing mounted under `/api` (`/stats`, `/listings`, `/rental-arbitrage`, `/analytics`).
 - **Cron & Scripts (`server/cron/`, `server/scripts/`)**:
   - `server/cron/daily_scheduler.py`: Automated daily crawler runner.

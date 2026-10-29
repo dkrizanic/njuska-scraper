@@ -1,24 +1,36 @@
-import { Request, Response } from 'express';
-import { getListings, ListingsQueryParams } from '../services/listings.service';
+import { Request, Response, NextFunction } from 'express';
+import { IListingsService } from '../interfaces/services/listing.service.interface';
+import { ListingsService } from '../services/listings.service';
+import { ListingQueryDto } from '../dtos/listing/listing-query.dto';
 
-export async function getListingsController(req: Request, res: Response): Promise<void> {
-  try {
-    const params: ListingsQueryParams = {
-      category: req.query.category as string,
-      neighborhood: req.query.neighborhood as string,
-      sellerType: req.query.sellerType as string,
-      minPrice: req.query.minPrice as string,
-      maxPrice: req.query.maxPrice as string,
-      query: req.query.query as string,
-      sort: req.query.sort as string,
-      limit: req.query.limit as string,
-      offset: req.query.offset as string,
-      page: req.query.page as string,
-    };
+export class ListingsController {
+  constructor(private readonly listingsService: IListingsService = new ListingsService()) {}
 
-    const result = await getListings(params);
-    res.json(result);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message || 'Internal Server Error' });
-  }
+  getListings = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const queryDto = ListingQueryDto.fromRequest(req.query);
+      const result = await this.listingsService.getListings(queryDto);
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getListingById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const id = parseInt(rawId as string, 10);
+      const result = await this.listingsService.getListingById(id);
+      if (!result) {
+        res.status(404).json({ error: 'Listing not found' });
+        return;
+      }
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
 }
+
+export const listingsController = new ListingsController();
+export const getListingsController = listingsController.getListings;

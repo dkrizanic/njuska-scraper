@@ -1,20 +1,27 @@
+import { IAnalyticsService } from '../interfaces/services/analytics.service.interface';
+import { IAnalyticsRepository } from '../interfaces/repositories/analytics.repository.interface';
+import { AnalyticsRepository } from '../repositories/analytics.repository';
 import {
-  fetchNeighborhoodStats,
-  fetchSellerStats,
-  fetchPriceChanges,
-  NeighborhoodStat,
-  SellerAnalytics,
-  PriceChangeRecord,
-} from '../models/analytics.model';
+  NeighborhoodStatsDto,
+  SellerAnalyticsDto,
+  PriceChangeResponseDto,
+} from '../dtos/analytics';
 
-export async function getNeighborhoodAnalytics(category?: string): Promise<NeighborhoodStat[]> {
-  return fetchNeighborhoodStats(category);
-}
+export class AnalyticsService implements IAnalyticsService {
+  constructor(private readonly analyticsRepo: IAnalyticsRepository = new AnalyticsRepository()) {}
 
-export async function getSellerAnalytics(): Promise<SellerAnalytics> {
-  return fetchSellerStats();
-}
+  public async getNeighborhoodAnalytics(category?: string): Promise<NeighborhoodStatsDto[]> {
+    const rows = await this.analyticsRepo.getNeighborhoodStats(category);
+    return rows.map(row => NeighborhoodStatsDto.fromRow(row));
+  }
 
-export async function getPriceChangeAnalytics(): Promise<PriceChangeRecord[]> {
-  return fetchPriceChanges();
+  public async getSellerAnalytics(): Promise<SellerAnalyticsDto> {
+    const { typeRows, sellerRows } = await this.analyticsRepo.getSellerStats();
+    return SellerAnalyticsDto.fromRows(typeRows, sellerRows);
+  }
+
+  public async getPriceChangeAnalytics(): Promise<PriceChangeResponseDto[]> {
+    const rows = await this.analyticsRepo.getPriceChanges();
+    return rows.map(row => PriceChangeResponseDto.fromRow(row));
+  }
 }

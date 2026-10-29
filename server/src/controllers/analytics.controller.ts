@@ -1,34 +1,40 @@
-import { Request, Response } from 'express';
-import {
-  getNeighborhoodAnalytics,
-  getSellerAnalytics,
-  getPriceChangeAnalytics,
-} from '../services/analytics.service';
+import { Request, Response, NextFunction } from 'express';
+import { IAnalyticsService } from '../interfaces/services/analytics.service.interface';
+import { AnalyticsService } from '../services/analytics.service';
 
-export async function getNeighborhoodsController(req: Request, res: Response): Promise<void> {
-  try {
-    const category = req.query.category as string;
-    const data = await getNeighborhoodAnalytics(category);
-    res.json(data);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message || 'Internal Server Error' });
-  }
+export class AnalyticsController {
+  constructor(private readonly analyticsService: IAnalyticsService = new AnalyticsService()) {}
+
+  getNeighborhoods = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const category = req.query.category as string;
+      const data = await this.analyticsService.getNeighborhoodAnalytics(category);
+      res.json(data);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getSellers = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const data = await this.analyticsService.getSellerAnalytics();
+      res.json(data);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getPriceChanges = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const data = await this.analyticsService.getPriceChangeAnalytics();
+      res.json(data);
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
-export async function getSellersController(_req: Request, res: Response): Promise<void> {
-  try {
-    const data = await getSellerAnalytics();
-    res.json(data);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message || 'Internal Server Error' });
-  }
-}
-
-export async function getPriceChangesController(_req: Request, res: Response): Promise<void> {
-  try {
-    const data = await getPriceChangeAnalytics();
-    res.json(data);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message || 'Internal Server Error' });
-  }
-}
+export const analyticsController = new AnalyticsController();
+export const getNeighborhoodsController = analyticsController.getNeighborhoods;
+export const getSellersController = analyticsController.getSellers;
+export const getPriceChangesController = analyticsController.getPriceChanges;

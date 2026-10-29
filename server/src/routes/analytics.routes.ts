@@ -1,14 +1,10 @@
 import { Router } from 'express';
-import {
-  getNeighborhoodsController,
-  getSellersController,
-  getPriceChangesController,
-} from '../controllers/analytics.controller';
+import { analyticsController } from '../controllers/analytics.controller';
 
 const router = Router();
 
-router.get('/neighborhoods', getNeighborhoodsController);
-router.get('/sellers', getSellersController);
-router.get('/price-changes', getPriceChangesController);
+router.get('/neighborhoods', analyticsController.getNeighborhoods);
+router.get('/sellers', analyticsController.getSellers);
+router.get('/price-changes', analyticsController.getPriceChanges);
 
 export default router;
