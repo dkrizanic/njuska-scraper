@@ -25,22 +25,22 @@ from src.parser import parse_search_results_page
 console = Console()
 
 STEALTH_SCRIPT = """
+Object.defineProperty(Navigator.prototype, 'webdriver', { get: () => undefined });
 Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-window.chrome = { runtime: {} };
+window.chrome = { app: { isInstalled: false }, runtime: {} };
+Object.defineProperty(Navigator.prototype, 'languages', { get: () => ['hr-HR', 'hr', 'en-US', 'en'] });
 Object.defineProperty(navigator, 'languages', { get: () => ['hr-HR', 'hr', 'en-US', 'en'] });
-Object.defineProperty(navigator, 'plugins', {
-    get: () => {
-        const plugins = [
-            { name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer', description: 'Portable Document Format' },
-            { name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai', description: '' },
-            { name: 'Native Client', filename: 'internal-nacl-plugin', description: '' }
-        ];
-        plugins.item = (i) => plugins[i];
-        plugins.namedItem = (name) => plugins.find(p => p.name === name);
-        plugins.refresh = () => {};
-        return plugins;
-    }
-});
+const mockPlugins = [
+    { name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer', description: 'Portable Document Format' },
+    { name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai', description: '' },
+    { name: 'Native Client', filename: 'internal-nacl-plugin', description: '' }
+];
+mockPlugins.item = (i) => mockPlugins[i];
+mockPlugins.namedItem = (name) => mockPlugins.find(p => p.name === name);
+mockPlugins.refresh = () => {};
+Object.defineProperty(Navigator.prototype, 'plugins', { get: () => mockPlugins });
+Object.defineProperty(navigator, 'plugins', { get: () => mockPlugins });
+
 const getParameter = WebGLRenderingContext.prototype.getParameter;
 WebGLRenderingContext.prototype.getParameter = function(parameter) {
     if (parameter === 37445) return 'Google Inc. (NVIDIA)';
