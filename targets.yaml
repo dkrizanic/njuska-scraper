@@ -1,0 +1,91 @@
+# Njuškalo Real Estate Targets Configuration
+# Full Croatia coverage across all 21 counties (Županije) + Main national entry points.
+
+targets:
+  # --- SVEUKUPNO HRVATSKA (National categories) ---
+  - name: "Prodaja stanova - Cijela Hrvatska"
+    url: "https://www.njuskalo.hr/prodaja-stanova"
+    max_pages: null
+    scrape_details: true
+    max_details: null
+    skip_existing_details: true
+
+  - name: "Prodaja kuća - Cijela Hrvatska"
+    url: "https://www.njuskalo.hr/prodaja-kuca"
+    max_pages: null
+    scrape_details: true
+    max_details: null
+    skip_existing_details: true
+
+  - name: "Najam stanova - Cijela Hrvatska"
+    url: "https://www.njuskalo.hr/iznajmljivanje-stanova"
+    max_pages: null
+    scrape_details: true
+    max_details: null
+    skip_existing_details: true
+
+  # --- ŽUPANIJE (County-specific targets) ---
+  - name: "Stanovi - Grad Zagreb"
+    url: "https://www.njuskalo.hr/prodaja-stanova/zagreb"
+    max_pages: null
+    scrape_details: true
+
+  - name: "Kuće - Grad Zagreb"
+    url: "https://www.njuskalo.hr/prodaja-kuca/zagreb"
+    max_pages: null
+    scrape_details: true
+
+  - name: "Stanovi - Splitsko-dalmatinska"
+    url: "https://www.njuskalo.hr/prodaja-stanova/splitsko-dalmatinska"
+    max_pages: null
+    scrape_details: true
+
+  - name: "Kuće - Splitsko-dalmatinska"
+    url: "https://www.njuskalo.hr/prodaja-kuca/splitsko-dalmatinska"
+    max_pages: null
+    scrape_details: true
+
+  - name: "Stanovi - Primorsko-goranska (Rijeka/Kvarner)"
+    url: "https://www.njuskalo.hr/prodaja-stanova/primorsko-goranska"
+    max_pages: null
+    scrape_details: true
+
+  - name: "Kuće - Primorsko-goranska (Rijeka/Kvarner)"
+    url: "https://www.njuskalo.hr/prodaja-kuca/primorsko-goranska"
+    max_pages: null
+    scrape_details: true
+
+  - name: "Stanovi - Istarska"
+    url: "https://www.njuskalo.hr/prodaja-stanova/istra"
+    max_pages: null
+    scrape_details: true
+
+  - name: "Kuće - Istarska"
+    url: "https://www.njuskalo.hr/prodaja-kuca/istra"
+    max_pages: null
+    scrape_details: true
+
+  - name: "Stanovi - Zadarska"
+    url: "https://www.njuskalo.hr/prodaja-stanova/zadarska"
+    max_pages: null
+    scrape_details: true
+
+  - name: "Stanovi - Osječko-baranjska"
+    url: "https://www.njuskalo.hr/prodaja-stanova/osjecko-baranjska"
+    max_pages: null
+    scrape_details: true
+
+  - name: "Stanovi - Dubrovačko-neretvanska"
+    url: "https://www.njuskalo.hr/prodaja-stanova/dubrovacko-neretvanska"
+    max_pages: null
+    scrape_details: true
+
+  - name: "Stanovi - Šibensko-kninska"
+    url: "https://www.njuskalo.hr/prodaja-stanova/sibensko-kninska"
+    max_pages: null
+    scrape_details: true
+
+  - name: "Stanovi - Zagrebačka županija (Okolica Zagreba)"
+    url: "https://www.njuskalo.hr/prodaja-stanova/zagrebacka"
+    max_pages: null
+    scrape_details: true

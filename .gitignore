@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+*.log
+
+# Environment variables
+.env
+.env.local
+
+# Browser Profiles & Playwright Cache
+browser_profile/
+debug_snapshots/
+.playwright/
+
+# Node.js
+node_modules/
+dist/
+build/
+.npm/
+
+# Docker volumes
+postgres_data/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
